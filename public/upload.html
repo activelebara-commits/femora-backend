@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload - FEMORA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #FDFBF7; color: #2C2C2C; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; background-image: radial-gradient(circle at 10% 20%, rgba(255, 209, 220, 0.4) 0%, transparent 40%); }
+    .box { width: 100%; max-width: 400px; text-align: center; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 2.2rem; margin-bottom: 2rem; }
+    .upload-area { border: 2px dashed #D4A5C9; border-radius: 1.5rem; padding: 3rem 1rem; cursor: pointer; background: #FFF; margin-bottom: 1.5rem; }
+    .upload-area img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; display: none; margin: 0 auto; border: 3px solid #E6E6FA; }
+    .btn { width: 100%; padding: 1.1rem; border: none; border-radius: 1rem; background: #2C2C2C; color: #FDFBF7; font-size: 1rem; font-weight: 500; cursor: pointer; }
+    .btn:disabled { opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="logo">FEMORA<span style="color:#D4A5C9">.</span></div>
+    <h2>Add a profile photo</h2>
+    <br>
+    <div class="upload-area" id="trigger">
+      <div style="font-size:3rem; margin-bottom:0.5rem;" id="icon">📷</div>
+      <img id="img" src="#">
+      <p id="text" style="color: #8A8A8A; margin-top: 0.5rem;">Tap to upload</p>
+      <input type="file" id="file" accept="image/*" style="display:none;">
+    </div>
+    <button class="btn" id="btn" disabled>Submit for Verification</button>
+  </div>
+
+  <script>
+    const API = 'https://femora-backend-sigma.vercel.app';
+    const email = localStorage.getItem('tempEmail');
+    let base64 = '';
+
+    document.getElementById('trigger').onclick = () => document.getElementById('file').click();
+
+    document.getElementById('file').onchange = (e) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        base64 = ev.target.result;
+        document.getElementById('img').src = base64;
+        document.getElementById('img').style.display = 'block';
+        document.getElementById('icon').style.display = 'none';
+        document.getElementById('text').textContent = 'Tap to change';
+        document.getElementById('btn').disabled = false;
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    };
+
+    document.getElementById('btn').onclick = async () => {
+      const btn = document.getElementById('btn');
+      btn.textContent = 'Uploading...'; btn.disabled = true;
+
+      const res = await fetch(`${API}/api/upload`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, base64Image: base64 })
+      });
+      const data = await res.json();
+      
+      if(data.success) window.location.href = '/waiting.html';
+      else alert('Upload failed');
+    };
+  </script>
+</body>
+</html>
