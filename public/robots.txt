@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://femora-backend-sigma.vercel.app/sitemap.xml
