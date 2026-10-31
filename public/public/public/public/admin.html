@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - FEMORA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #FDFBF7; padding: 2rem; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; max-width: 600px; margin: 0 auto 2rem auto; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; }
+    .card { background: #FFF; border: 1px solid #E5E5E5; border-radius: 1.2rem; padding: 1.2rem; margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center; max-width: 600px; margin: 0 auto 1rem auto; }
+    .avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+    .info { flex: 1; }
+    .info h4 { font-size: 1rem; margin-bottom: 0.2rem; }
+    .info p { font-size: 0.75rem; color: #8A8A8A; }
+    .actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    button { padding: 0.4rem 0.8rem; border-radius: 0.5rem; border: none; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
+    .approve { background: #D4A5C9; color: #FFF; }
+    .reject { background: #FFE4E1; color: #FF6B6B; }
+    .logout { background: #2C2C2C; color: #FFF; padding: 0.5rem 1rem; border-radius: 2rem; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">Admin Dashboard</div>
+    <button class="logout" onclick="logout()">Log out</button>
+  </div>
+  <div id="list"></div>
+
+  <script>
+    const API = 'https://femora-backend-sigma.vercel.app';
+    
+    // SECURITY CHECK: Kick them out if they aren't logged in
+    if(sessionStorage.getItem('isAdmin') !== 'true') {
+      window.location.replace('/admin-login.html');
+    }
+
+    function logout() {
+      sessionStorage.removeItem('isAdmin');
+      window.location.replace('/');
+    }
+
+    async function loadUsers() {
+      const res = await fetch(`${API}/api/admin-users`);
+      const users = await res.json();
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+      
+      users.forEach(user => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img class="avatar" src="${user.avatar_url || 'https://via.placeholder.com/50'}">
+          <div class="info">
+            <h4>${user.name}</h4>
+            <p>${user.email} · ${user.phone}</p>
+            <p style="color: #D4A5C9; font-weight: 600;">🔑 ${user.password}</p>
+            <p style="color:${user.status === 'approved' ? '#4ade80' : '#fbbf24'}; font-weight: 600;">${user.status.toUpperCase()}</p>
+            <div class="actions">
+              ${user.status === 'pending' ? `
+                <button class="approve" onclick="action('${user.email}', 'approve')">Approve</button>
+                <button class="reject" onclick="action('${user.email}', 'reject')">Reject</button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    async function action(email, type) {
+      await fetch(`${API}/api/admin-action`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, action: type })
+      });
+      loadUsers();
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>
