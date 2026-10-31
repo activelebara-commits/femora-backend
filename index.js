@@ -5,7 +5,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' })); 
-
+app.use(express.static('public'));
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const ADMIN_PIN = process.env.ADMIN_PIN;
 
