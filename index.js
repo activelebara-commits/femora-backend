@@ -49,4 +49,7 @@ app.post('/api/admin-action', async (req, res) => {
   res.json({ success: true });
 });
 
-app.listen(3000, () => console.log('Femora Backend Running'));
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(3000, () => console.log('Femora Backend Running'));
+}
+module.exports = app;
