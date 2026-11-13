@@ -74,20 +74,36 @@
 
       const btn = document.getElementById('btn');
       btn.textContent = 'Loading...'; btn.disabled = true;
-
-      const res = await fetch(`${API}/api/signup`, {
+try {
+  let res;
+  let retries = 3;
+  
+  while (retries > 0) {
+    try {
+      res = await fetch(`${API}/api/signup`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, phone, password })
       });
-      const data = await res.json();
-      
-      if(data.success) {
-        localStorage.setItem('tempEmail', email);
-        window.location.href = '/upload.html';
-      } else {
-        alert(data.error); btn.textContent = 'Continue'; btn.disabled = false;
-      }
-    });
+      break; 
+    } catch (err) {
+      retries--;
+      if (retries === 0) throw err;
+      await new Promise(r => setTimeout(r, 1500)); 
+    }
+  }
+
+  const data = await res.json();
+  
+  if(data.success) {
+    localStorage.setItem('tempEmail', email);
+    window.location.href = '/upload.html';
+  } else {
+    alert(data.error); btn.textContent = 'Continue'; btn.disabled = false;
+  }
+} catch (err) {
+  alert('Network error. Please check your internet and try again.');
+  btn.textContent = 'Continue'; btn.disabled = false;
+}
   </script>
 </body>
 </html>
