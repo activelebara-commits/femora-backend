@@ -50,60 +50,58 @@
   </div>
 
   <script>
-    // Toggle password visibility
-    function togglePassword() {
-      const input = document.getElementById('password');
-      const icon = document.querySelector('.eye-icon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.textContent = '🙈'; // Hide icon
-      } else {
-        input.type = 'password';
-        icon.textContent = '👁️'; // Show icon
-      }
+  // Toggle password visibility
+  function togglePassword() {
+    const input = document.getElementById('password');
+    const icon = document.querySelector('.eye-icon');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      icon.textContent = '👁️';
+    }
+  }
+
+  const API = 'https://femora-backend-sigma.vercel.app';
+  
+  document.getElementById('btn').addEventListener('click', async () => {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value.trim();
+    
+    if(!name || !email || !phone || !password) {
+      return alert('Please fill all fields');
     }
 
-    const API = 'https://femora-backend-sigma.vercel.app';
-    document.getElementById('btn').addEventListener('click', async () => {
-      const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
-      const phone = document.getElementById('phone').value;
-      const password = document.getElementById('password').value;
-      
-      if(!name || !email || !phone || !password) return alert('Fill all fields');
+    const btn = document.getElementById('btn');
+    btn.textContent = 'Loading...'; 
+    btn.disabled = true;
 
-      const btn = document.getElementById('btn');
-      btn.textContent = 'Loading...'; btn.disabled = true;
-try {
-  let res;
-  let retries = 3;
-  
-  while (retries > 0) {
     try {
-      res = await fetch(`${API}/api/signup`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${API}/api/signup`, {
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, phone, password })
       });
-      break; 
+      
+      const data = await res.json();
+      
+      if(data.success) {
+        localStorage.setItem('tempEmail', email);
+        window.location.href = '/upload.html';
+      } else {
+        alert(data.error || 'Something went wrong'); 
+        btn.textContent = 'Continue'; 
+        btn.disabled = false;
+      }
     } catch (err) {
-      retries--;
-      if (retries === 0) throw err;
-      await new Promise(r => setTimeout(r, 1500)); 
+      alert('Network error. Please check your internet and try again.');
+      btn.textContent = 'Continue'; 
+      btn.disabled = false;
     }
-  }
-
-  const data = await res.json();
-  
-  if(data.success) {
-    localStorage.setItem('tempEmail', email);
-    window.location.href = '/upload.html';
-  } else {
-    alert(data.error); btn.textContent = 'Continue'; btn.disabled = false;
-  }
-} catch (err) {
-  alert('Network error. Please check your internet and try again.');
-  btn.textContent = 'Continue'; btn.disabled = false;
-}
+  });
   </script>
 </body>
 </html>
